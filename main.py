@@ -1,6 +1,22 @@
+from PyQt6.QtWidgets import QApplication, QLabel, QMainWindow
+
+class MainWindow(QMainWindow):
+	def __init__(self):
+		super().__init__()
+
+		self.setWindowTitle("Say It, Write It")
+		label = QLabel("Hell owrld ")
+
+		self.setCentralWidget(label)
+
 def main():
-    print("Hello from say-it-write-it!")
+	app = QApplication([])
+
+	window = MainWindow()
+	window.show()
+
+	app.exec()
 
 
 if __name__ == "__main__":
-    main()
+	main()
