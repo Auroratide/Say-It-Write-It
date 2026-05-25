@@ -7,5 +7,6 @@ requires-python = ">=3.10"
 dependencies = [
     "faster-whisper>=1.2.1",
     "pyqt6>=6.11.0",
+    "silero-vad>=6.2.1",
     "sounddevice>=0.5.5",
 ]
