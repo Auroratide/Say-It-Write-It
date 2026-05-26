@@ -6,10 +6,16 @@ import numpy as np
 from siwi.pipe import Pipe
 from silero_vad import VADIterator
 from faster_whisper import WhisperModel
+from platformdirs import user_data_dir
+from pathlib import Path
 
 SAMPLE_RATE = 16000
 BLOCKSIZE = 512
 CHUNK_SECONDS = 1
+
+def model_location(name: str) -> str:
+	models_dir = Path(user_data_dir(appname="SayItWriteIt", appauthor=False))	
+	return str(models_dir / name)
 
 class AudioStream(Pipe[None, np.ndarray]):
 	_audio = queue.Queue()
@@ -30,7 +36,8 @@ class AudioStream(Pipe[None, np.ndarray]):
 class VadBuffer(Pipe[np.ndarray, np.ndarray]):
 	def __init__(self):
 		super().__init__()
-		model, _ = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad")
+		torch.hub.set_dir(model_location("silero"))
+		model, _ = torch.hub.load(repo_or_dir="snakers4/silero-vad", model="silero_vad", trust_repo=True)
 		self._vad = VADIterator(model=model, sampling_rate=SAMPLE_RATE, min_silence_duration_ms=CHUNK_SECONDS * 1000)
 		self._hot = False
 		self._chunk_buffer = np.array([], dtype=np.float32)
@@ -63,7 +70,7 @@ class VadBuffer(Pipe[np.ndarray, np.ndarray]):
 class Transcription(Pipe[np.ndarray, str]):
 	def __init__(self):
 		super().__init__()
-		self._model = WhisperModel("base", device="cpu")
+		self._model = WhisperModel("base", device="cpu", download_root=model_location("whisper"))
 	
 	def receive(self, data):
 		segments, _ = self._model.transcribe(data, condition_on_previous_text=False)
